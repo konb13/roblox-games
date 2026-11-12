@@ -85,6 +85,24 @@ local incomeLabel = label(stats, { Position = UDim2.new(0, 10, 0, 38), Size = UD
 local stageLabel = label(stats, { Position = UDim2.new(0, 10, 0, 60), Size = UDim2.new(1, -20, 0, 22), TextXAlignment = Enum.TextXAlignment.Left })
 local miscLabel = label(stats, { Position = UDim2.new(0, 10, 0, 86), Size = UDim2.new(1, -20, 0, 20), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(220, 200, 255) })
 
+local timerLabel = label(gui, {
+	Position = UDim2.new(0, 10, 0, 144),
+	Size = UDim2.new(0, 210, 0, 40),
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextColor3 = Color3.fromRGB(120, 255, 255),
+	Text = "",
+})
+local bestLabel = label(gui, {
+	Position = UDim2.new(0, 10, 0, 184),
+	Size = UDim2.new(0, 210, 0, 22),
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextColor3 = Color3.fromRGB(200, 240, 255),
+	Text = "",
+})
+local function formatTime(seconds: number): string
+	return string.format("%d:%05.2f", seconds // 60, seconds % 60)
+end
+
 local function formatNumber(n: number): string
 	n = math.floor(n)
 	if n >= 1e6 then
@@ -382,7 +400,7 @@ shopLayout.Parent = shopList
 
 local collectionPanel, collectionList = makePanel("🧠 Your Brainrots")
 local grid = Instance.new("UIGridLayout")
-grid.CellSize = UDim2.new(0, 150, 0, 150)
+grid.CellSize = UDim2.new(0, 160, 0, 178)
 grid.CellPadding = UDim2.new(0, 10, 0, 10)
 grid.SortOrder = Enum.SortOrder.LayoutOrder
 grid.Parent = collectionList
@@ -477,6 +495,16 @@ local function rebuildCollection()
 			ZIndex = 23,
 		})
 		if owned then
+			label(card, {
+				Position = UDim2.new(0, 6, 0, 98),
+				Size = UDim2.new(1, -12, 0, 30),
+				Text = `"{info.chant}"`,
+				TextColor3 = Color3.fromRGB(255, 220, 150),
+				Font = Enum.Font.GothamMedium,
+				ZIndex = 23,
+			})
+		end
+		if owned then
 			local equipped = pet == info.id
 			local b = button(card, {
 				AnchorPoint = Vector2.new(0.5, 1),
@@ -530,6 +558,13 @@ RunService.RenderStepped:Connect(function()
 		local left = if ends and total and total > 0 then math.max(0, ends - now) / total else 0
 		shade.Size = UDim2.fromScale(1, left)
 	end
+
+	local runStart = player:GetAttribute("RunStart")
+	timerLabel.Text = if typeof(runStart) == "number"
+		then `⏱️ {formatTime(workspace:GetServerTimeNow() - runStart)}`
+		else "⏱️ Cross the start line!"
+	local best = player:GetAttribute("BestTime")
+	bestLabel.Text = if typeof(best) == "number" then `🏆 Best {formatTime(best)}` else ""
 
 	local event = ReplicatedStorage:GetAttribute("ChaosEvent")
 	if typeof(event) == "string" and event ~= "" then

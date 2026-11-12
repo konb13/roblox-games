@@ -26,6 +26,8 @@ export type Course = {
 	stageNames: { string },
 	stageCount: number,
 	finishPad: BasePart,
+	startLine: BasePart,
+	speedPads: { BasePart },
 	coinSpots: { Vector3 },
 	tileRows: { Row },
 	killY: number,
@@ -38,7 +40,10 @@ type Ctx = {
 	coinSpots: { Vector3 },
 	tileRows: { Row },
 	serverOwned: { BasePart },
+	speedPads: { BasePart },
 }
+
+local speedPad: (ctx: Ctx, pos: Vector3) -> ()
 
 local GLASS = Color3.fromRGB(170, 230, 255)
 local GLASS_ALPHA = 0.35
@@ -133,9 +138,10 @@ function CourseBuilder.shuffleRow(row: Row, rng: Random)
 end
 
 local function stageGlass(ctx: Ctx, z: number, y: number, rows: number, cols: number, safe: number): (number, number)
-	local size, pitch = 7, 10
-	local colPitch = if cols >= 4 then 7.5 else 8
-	local zStart = z + 3
+	-- Rows sit right next to each other: you run straight across and pick a lane.
+	local size, pitch = 7, 7.4
+	local colPitch = 7.4
+	local zStart = z + 0.4
 	for r = 1, rows do
 		local zc = zStart + size / 2 + (r - 1) * pitch
 		local tiles: { BasePart } = {}
@@ -157,7 +163,7 @@ local function stageGlass(ctx: Ctx, z: number, y: number, rows: number, cols: nu
 		CourseBuilder.shuffleRow(row, ctx.rng)
 		table.insert(ctx.tileRows, row)
 	end
-	return zStart + (rows - 1) * pitch + size + 3, y
+	return zStart + (rows - 1) * pitch + size + 0.4, y
 end
 
 -- ------------------------------------------------------------------ crumble road
@@ -200,7 +206,8 @@ local function stageCrumble(ctx: Ctx, z: number, y: number, rows: number, color:
 	return z + 2 + rows * pitch + 2, y
 end
 
--- ------------------------------------------------------------------ spinners
+-- ------------------------------------------------------------------ sweepers
+-- Tall spinning walls: too high to jump, so you time your dash or get knocked off.
 
 local function stageSpin(ctx: Ctx, z: number, y: number, speeds: { number }, color: Color3): (number, number)
 	local W = Config.Course.Width
@@ -212,16 +219,16 @@ local function stageSpin(ctx: Ctx, z: number, y: number, speeds: { number }, col
 		local zc = z + 6 + (i - 0.5) * section
 		local pole = Parts.block(ctx.folder, {
 			Name = "SpinPole",
-			Size = Vector3.new(4, 2, 2),
-			CFrame = CFrame.new(0, y + 2, zc) * upright,
+			Size = Vector3.new(8, 2, 2),
+			CFrame = CFrame.new(0, y + 4, zc) * upright,
 			Color = Color3.fromRGB(60, 60, 70),
 			Material = Enum.Material.Metal,
 			Shape = Enum.PartType.Cylinder,
 		})
 		local bar = Instance.new("Part")
 		bar.Name = "SpinBar"
-		bar.Size = Vector3.new(W - 2, 1.6, 1.6)
-		bar.CFrame = CFrame.new(0, y + 2.4, zc)
+		bar.Size = Vector3.new(W - 2, 6, 1.6)
+		bar.CFrame = CFrame.new(0, y + 3.6, zc)
 		bar.Color = Color3.fromRGB(255, 60, 60)
 		bar.Material = Enum.Material.Neon
 		bar.CustomPhysicalProperties = PhysicalProperties.new(5, 0.3, 0.6)
@@ -231,7 +238,7 @@ local function stageSpin(ctx: Ctx, z: number, y: number, speeds: { number }, col
 		noCollide.Part1 = bar
 		noCollide.Parent = bar
 		local a0 = Instance.new("Attachment")
-		a0.CFrame = pole.CFrame:ToObjectSpace(CFrame.new(0, y + 2.4, zc) * upright)
+		a0.CFrame = pole.CFrame:ToObjectSpace(CFrame.new(0, y + 3.6, zc) * upright)
 		a0.Parent = pole
 		local a1 = Instance.new("Attachment")
 		a1.CFrame = upright
@@ -252,21 +259,24 @@ end
 
 -- ------------------------------------------------------------------ blinking platforms
 
-local function stageBlink(ctx: Ctx, z: number, y: number, count: number, period: number, color: Color3): (number, number)
-	local size, pitch = 8, 11
+local function stageBlink(ctx: Ctx, z: number, y: number, sections: number, period: number, color: Color3): (number, number)
+	-- A continuous road cut into sections that take turns vanishing. Wait at the edge
+	-- for your section to appear, then sprint across. No jumping needed.
+	local W = Config.Course.Width
+	local depth = 18
 	local plats: { BasePart } = {}
-	for i = 1, count do
+	for i = 1, sections do
 		local p = Parts.block(ctx.folder, {
 			Name = "BlinkPlatform",
-			Size = Vector3.new(size, 1, size),
-			CFrame = CFrame.new(if i % 2 == 0 then 4 else -4, y - 0.5, z + 3 + size / 2 + (i - 1) * pitch),
+			Size = Vector3.new(W, 1, depth),
+			CFrame = CFrame.new(0, y - 0.5, z + depth / 2 + (i - 1) * depth),
 			Color = color,
 			Material = Enum.Material.Neon,
 		})
 		p:SetAttribute("Group", i % 2)
 		table.insert(plats, p)
 	end
-	table.insert(ctx.coinSpots, plats[math.max(1, count // 2)].Position + Vector3.new(0, 3.5, 0))
+	table.insert(ctx.coinSpots, plats[math.max(1, sections // 2)].Position + Vector3.new(6, 3.5, 0))
 
 	local ghost = Color3.fromRGB(80, 80, 90)
 	local warn = Color3.fromRGB(255, 140, 0)
@@ -279,18 +289,18 @@ local function stageBlink(ctx: Ctx, z: number, y: number, count: number, period:
 			p.Color = if not solid then ghost elseif g == warnGroup then warn else color
 		end
 	end
-	-- A only -> both (A about to vanish) -> B only -> both (B about to vanish) -> ...
+	-- A only -> both (A flashing orange) -> B only -> both (B flashing) -> ...
 	task.spawn(function()
 		local group = 1
 		while true do
 			show(group, nil)
 			task.wait(period)
 			show(nil, group)
-			task.wait(0.7)
+			task.wait(1)
 			group = 1 - group
 		end
 	end)
-	return z + 3 + (count - 1) * pitch + size + 3, y
+	return z + sections * depth, y
 end
 
 -- ------------------------------------------------------------------ bounce pads
@@ -391,6 +401,20 @@ end
 
 -- ------------------------------------------------------------------ checkpoints, hub, finish
 
+-- A ⚡ pad: run over it for a short burst of speed (handled by PowerService).
+speedPad = function(ctx: Ctx, pos: Vector3)
+	local pad = Parts.block(ctx.folder, {
+		Name = "SpeedPad",
+		Size = Vector3.new(16, 0.3, 3.5),
+		CFrame = CFrame.new(pos + Vector3.new(0, 0.25, 0)),
+		Color = Color3.fromRGB(0, 230, 255),
+		Material = Enum.Material.Neon,
+		CanCollide = false,
+	})
+	CollectionService:AddTag(pad, "SpeedPad")
+	table.insert(ctx.speedPads, pad)
+end
+
 local function checkpoint(ctx: Ctx, stage: number, z: number, y: number): (CFrame, BasePart)
 	local W = Config.Course.Width
 	local color = STAGE_COLORS[stage] or Color3.new(1, 1, 1)
@@ -405,6 +429,7 @@ local function checkpoint(ctx: Ctx, stage: number, z: number, y: number): (CFram
 		CanCollide = false,
 	})
 	pad:SetAttribute("Stage", stage)
+	speedPad(ctx, Vector3.new(0, y, z + 14))
 	local info = Brainrots.forStage(stage)
 	if info then
 		local pedestal = Parts.block(ctx.folder, {
@@ -420,7 +445,7 @@ local function checkpoint(ctx: Ctx, stage: number, z: number, y: number): (CFram
 		model.Parent = ctx.folder
 		Parts.billboard(
 			pedestal,
-			`{info.name}\n{info.rarity} · +{info.income}/s`,
+			`{info.name}\n"{info.chant}"\n{info.rarity} · +{info.income}/s`,
 			Brainrots.RarityColors[info.rarity],
 			10,
 			120
@@ -433,7 +458,7 @@ end
 function CourseBuilder.build(): Course
 	local folder = Instance.new("Folder")
 	folder.Name = "Course"
-	local ctx: Ctx = { folder = folder, rng = Random.new(), coinSpots = {}, tileRows = {}, serverOwned = {} }
+	local ctx: Ctx = { folder = folder, rng = Random.new(), coinSpots = {}, tileRows = {}, serverOwned = {}, speedPads = {} }
 	local Y = Config.Course.Height
 
 	-- Hub
@@ -464,6 +489,15 @@ function CourseBuilder.build(): Course
 			Material = Enum.Material.Neon,
 		})
 	end
+	-- Crossing the start line starts your run timer.
+	local startLine = Parts.block(folder, {
+		Name = "StartLine",
+		Size = Vector3.new(Config.Course.Width, 10, 1),
+		CFrame = CFrame.new(0, Y + 5, -2),
+		Transparency = 1,
+		CanCollide = false,
+	})
+	speedPad(ctx, Vector3.new(0, Y, -6))
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "HubSpawn"
 	spawn.Anchored = true
@@ -480,35 +514,35 @@ function CourseBuilder.build(): Course
 	local names: { string } = {}
 
 	local stages: { { name: string, build: (z: number, y: number, color: Color3) -> (number, number) } } = {
-		{ name = "Glass Steps", build = function(z, y)
-			return stageGlass(ctx, z, y, 5, 3, 2)
+		{ name = "Glass Lanes", build = function(z, y)
+			return stageGlass(ctx, z, y, 8, 3, 2)
 		end },
 		{ name = "Crumble Road", build = function(z, y, c)
-			return stageCrumble(ctx, z, y, 10, c)
+			return stageCrumble(ctx, z, y, 14, c)
 		end },
-		{ name = "Spin Cycle", build = function(z, y, c)
-			return stageSpin(ctx, z, y, { 1.4 }, c)
+		{ name = "Sweeper Alley", build = function(z, y, c)
+			return stageSpin(ctx, z, y, { 1.3 }, c)
 		end },
-		{ name = "Blinky Bridge", build = function(z, y, c)
-			return stageBlink(ctx, z, y, 6, 2.2, c)
+		{ name = "Blink Road", build = function(z, y, c)
+			return stageBlink(ctx, z, y, 4, 2.4, c)
 		end },
 		{ name = "Glass Gamble", build = function(z, y)
-			return stageGlass(ctx, z, y, 7, 3, 1)
+			return stageGlass(ctx, z, y, 10, 4, 2)
 		end },
-		{ name = "Boing Boing", build = function(z, y, c)
+		{ name = "Launch Pads", build = function(z, y, c)
 			return stageBounce(ctx, z, y, 3, c)
 		end },
 		{ name = "Boulder Hill", build = function(z, y, c)
 			return stageHill(ctx, z, y, 60, 16, c)
 		end },
-		{ name = "Double Spin", build = function(z, y, c)
-			return stageSpin(ctx, z, y, { 2, -2.4 }, c)
+		{ name = "Double Sweep", build = function(z, y, c)
+			return stageSpin(ctx, z, y, { 1.8, -2.1 }, c)
 		end },
 		{ name = "Blink Panic", build = function(z, y, c)
-			return stageBlink(ctx, z, y, 8, 1.4, c)
+			return stageBlink(ctx, z, y, 6, 1.5, c)
 		end },
 		{ name = "Glass Gauntlet", build = function(z, y)
-			return stageGlass(ctx, z, y, 9, 4, 1)
+			return stageGlass(ctx, z, y, 12, 4, 1)
 		end },
 	}
 
@@ -554,6 +588,8 @@ function CourseBuilder.build(): Course
 		stageNames = names,
 		stageCount = #stages,
 		finishPad = finishPad,
+		startLine = startLine,
+		speedPads = ctx.speedPads,
 		coinSpots = ctx.coinSpots,
 		tileRows = ctx.tileRows,
 		killY = Y - Config.Course.FallDistance,

@@ -1,45 +1,61 @@
 # 🧠 Brainrot Dash: Don't Fall! 💀
 
-Run forward across a sky course over a bottomless void. Pick the wrong glass tile and
-you fall, so dodge spinning bars, time the blinking platforms and bounce over gaps.
+A **speedrun** across a sky course over a bottomless void. You run fast and almost never
+need to jump: pick the right glass lane, outrun crumbling floors, dodge sweeper walls,
+time the blinking road. Cross the start line and the clock starts.
 At the end of every stage you rescue a goofy brainrot creature that earns you coins
 and follows you around. Buy superpowers, survive the server-wide Chaos Events, reach
 the finish and **rebirth** for a bigger coin multiplier.
 
-## The course (10 stages)
+## The course (10 stages, built for running, not jumping)
 | # | Stage | What happens |
 |---|---|---|
-| 1 | Glass Steps | Rows of 3 glass tiles, 2 are safe. The fake one shatters. |
-| 2 | Crumble Road | Tiles crumble a split second after you step on them. Keep moving! |
-| 3 | Spin Cycle | A spinning bar sweeps the floor. Jump it. |
-| 4 | Blinky Bridge | Platforms blink in and out. They flash orange before vanishing. |
-| 5 | Glass Gamble | 3 tiles per row, only 1 is safe. |
-| 6 | Boing Boing | Bounce pads launch you over gaps (grab the coins mid-air). |
+| 1 | Glass Lanes | 3 lanes of glass, rows touching. 1 tile per row is fake and shatters under you. |
+| 2 | Crumble Road | The floor crumbles a split second after you touch it. Don't stop! |
+| 3 | Sweeper Alley | A tall spinning wall sweeps the road. Time your dash past it. |
+| 4 | Blink Road | Road sections take turns vanishing (orange = about to go). Sprint across. |
+| 5 | Glass Gamble | 4 lanes, 2 fake tiles per row. |
+| 6 | Launch Pads | Run onto the pads and they fling you over the gaps automatically. |
 | 7 | Boulder Hill | Run uphill while boulders roll down at you. |
-| 8 | Double Spin | Two bars spinning in opposite directions. |
-| 9 | Blink Panic | Faster blinking platforms. |
-| 10 | Glass Gauntlet | 4 tiles per row, 1 safe, 9 rows. |
-| 🏆 | Finish | Step on the pad to **rebirth** (+500 coins, and +50% to all coin income, forever). |
+| 8 | Double Sweep | Two sweeper walls spinning in opposite directions. |
+| 9 | Blink Panic | Faster blinking road. |
+| 10 | Glass Gauntlet | 4 lanes, only 1 safe tile per row, 12 rows. |
+| 🏆 | Finish | Stops your timer. Step on the pad to **rebirth** (+500 coins, +50% coin income forever). |
+
+**Speedrun features**
+- Base run speed is **24** (normal Roblox is 16).
+- **⚡ Speed pads** at the hub and every checkpoint give a 2.5 s burst.
+- **⏱️ Run timer:** starts when you cross the START line, stops at the finish. Falling doesn't stop the clock.
+- Your **best time is saved** and shown on the leaderboard (the `Best` column).
 
 Falling puts you back at your last checkpoint (with a funny message and a fall counter 💀).
 
-## Brainrots (original characters)
+## Brainrots
 Each checkpoint holds one. Touch the checkpoint to rescue it. It earns coins every
 second (even while you're standing still), and your newest one follows you as a pet.
 Change your pet in the 🧠 Brainrots menu.
 
-| Stage | Brainrot | Rarity | Coins/s |
-|---|---|---|---|
-| 1 | Toastino Turbo | Common | 1 |
-| 2 | Cappuccacto | Common | 2 |
-| 3 | Bingus Bongus | Uncommon | 4 |
-| 4 | Sir Pickleton | Uncommon | 6 |
-| 5 | Banana Bandit | Rare | 10 |
-| 6 | Froggo Fridgeman | Rare | 15 |
-| 7 | Cloudy Croissant | Epic | 25 |
-| 8 | Duck Dynamo | Epic | 40 |
-| 9 | Sneaky Sock | Legendary | 60 |
-| 10 | Pizza Pharaoh | Mythic | 100 |
+They're in the classic brainrot style (animal + everyday object, Italian-sounding name,
+sneakers, a catchphrase) but they're **original characters**. Copying the famous meme
+characters can get a Roblox game taken down, because some of them have trademark claims.
+
+| Stage | Brainrot | What it is | Rarity | Coins/s |
+|---|---|---|---|---|
+| 1 | Gattino Frullatino | a cat that is a blender | Common | 1 |
+| 2 | Pomodoro Motorino | a tomato on a scooter | Common | 2 |
+| 3 | Ranocchio Lavatrice | a frog in a washing machine | Uncommon | 4 |
+| 4 | Pinguino Pizzaiolo | a penguin pizza chef | Uncommon | 6 |
+| 5 | Cammello Caffettiera | a camel with moka-pot humps | Rare | 10 |
+| 6 | Polpo Pantofolo | an octopus in fluffy slippers | Rare | 15 |
+| 7 | Elefantino Aspirapolvere | an elephant with a vacuum-hose trunk | Epic | 25 |
+| 8 | Gufo Guantone | a boxing owl | Epic | 40 |
+| 9 | Tartaruga Trattore | a turtle whose shell is a tractor | Legendary | 60 |
+| 10 | Giraffa Gelatona | a giraffe ice-cream cone on one sneaker | Mythic | 100 |
+
+**Using your own 3D models:** make a Folder called `BrainrotModels` in ReplicatedStorage (in Studio)
+and put a Model in it named after the brainrot's id (e.g. `GattinoFrullatino`, ids are in
+`src/shared/Brainrots.luau`). The game uses it instead of the part-built one, scaled to fit and
+facing forward (-Z). Use models you made or that you're allowed to use.
 
 ## Superpowers (🛒 Shop)
 | Key | Power | Price | What it does |

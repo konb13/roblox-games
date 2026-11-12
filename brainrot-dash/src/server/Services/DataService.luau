@@ -25,6 +25,7 @@ export type Profile = {
 	brainrots: { [string]: boolean },
 	powers: { [string]: boolean },
 	pet: string?,
+	bestTime: number?, -- fastest full run in seconds
 }
 
 local store: DataStore? = nil
@@ -43,7 +44,7 @@ local profiles: { [Player]: Profile } = {}
 local loaded: { [Player]: boolean } = {}
 
 local function defaultProfile(): Profile
-	return { coins = 0, rebirths = 0, bestStage = 0, brainrots = {}, powers = {}, pet = nil }
+	return { coins = 0, rebirths = 0, bestStage = 0, brainrots = {}, powers = {}, pet = nil, bestTime = nil }
 end
 
 local function key(player: Player): string
@@ -67,6 +68,15 @@ local function syncStats(player: Player, profile: Profile)
 	if rebirths then
 		rebirths.Value = profile.rebirths
 	end
+	local stats = player:FindFirstChild("leaderstats")
+	local best = stats and stats:FindFirstChild("Best")
+	if best and best:IsA("StringValue") then
+		best.Value = if profile.bestTime then DataService.formatTime(profile.bestTime) else "-"
+	end
+end
+
+function DataService.formatTime(seconds: number): string
+	return string.format("%d:%05.2f", seconds // 60, seconds % 60)
 end
 
 function DataService.multiplier(player: Player): number
@@ -98,6 +108,7 @@ local function syncAll(player: Player, profile: Profile)
 		player:SetAttribute("Power_" .. id, true)
 	end
 	player:SetAttribute("Pet", profile.pet)
+	player:SetAttribute("BestTime", profile.bestTime)
 	player:SetAttribute("Income", DataService.income(player))
 end
 
@@ -109,6 +120,10 @@ function DataService.load(player: Player): Profile
 		v.Name = name
 		v.Parent = stats
 	end
+	local best = Instance.new("StringValue")
+	best.Name = "Best"
+	best.Value = "-"
+	best.Parent = stats
 	stats.Parent = player
 
 	local profile = defaultProfile()
@@ -124,6 +139,7 @@ function DataService.load(player: Player): Profile
 			profile.brainrots = if typeof(data.brainrots) == "table" then data.brainrots else {}
 			profile.powers = if typeof(data.powers) == "table" then data.powers else {}
 			profile.pet = if typeof(data.pet) == "string" then data.pet else nil
+			profile.bestTime = tonumber(data.bestTime)
 		elseif not ok then
 			warn("DataService: could not load", player.Name, data)
 		end
@@ -148,6 +164,7 @@ function DataService.save(player: Player)
 			brainrots = profile.brainrots,
 			powers = profile.powers,
 			pet = profile.pet,
+			bestTime = profile.bestTime,
 		})
 	end)
 	if not ok then
@@ -183,6 +200,22 @@ function DataService.setBestStage(player: Player, stage: number)
 		profile.bestStage = stage
 		syncStats(player, profile)
 	end
+end
+
+-- Returns true if this run beat the player's best time.
+function DataService.submitTime(player: Player, seconds: number): boolean
+	local profile = profiles[player]
+	if not profile then
+		return false
+	end
+	local best = profile.bestTime
+	if best == nil or seconds < best then
+		profile.bestTime = seconds
+		syncStats(player, profile)
+		player:SetAttribute("BestTime", seconds)
+		return true
+	end
+	return false
 end
 
 function DataService.addRebirth(player: Player)

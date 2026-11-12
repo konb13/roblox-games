@@ -15,6 +15,7 @@ local PowerService = {}
 local lastUse: { [Player]: { [string]: number } } = {}
 local zoomUntil: { [Player]: number } = {}
 local moonUntil: { [Player]: number } = {}
+local padUntil: { [Player]: number } = {}
 local frenzy = false
 
 local function powerInfo(id: string): Config.Power?
@@ -35,6 +36,9 @@ function PowerService.refreshMovement(player: Player)
 	end
 	local now = os.clock()
 	local speed = if frenzy then Config.Chaos.FrenzySpeed else Config.Player.WalkSpeed
+	if (padUntil[player] or 0) > now then
+		speed = math.max(speed, Config.PowerTuning.SpeedPadSpeed)
+	end
 	if (zoomUntil[player] or 0) > now then
 		speed = math.max(speed, Config.PowerTuning.ZoomiesSpeed)
 	end
@@ -48,6 +52,17 @@ function PowerService.setFrenzy(on: boolean)
 	for _, player in Players:GetPlayers() do
 		PowerService.refreshMovement(player)
 	end
+end
+
+-- ⚡ speed pads: a short burst of speed.
+function PowerService.speedBurst(player: Player)
+	local now = os.clock()
+	if (padUntil[player] or 0) - now > Config.PowerTuning.SpeedPadDuration - 0.5 then
+		return -- just got one
+	end
+	padUntil[player] = now + Config.PowerTuning.SpeedPadDuration
+	PowerService.refreshMovement(player)
+	task.delay(Config.PowerTuning.SpeedPadDuration + 0.05, PowerService.refreshMovement, player)
 end
 
 function PowerService.init()
@@ -106,6 +121,7 @@ function PowerService.init()
 		lastUse[player] = nil
 		zoomUntil[player] = nil
 		moonUntil[player] = nil
+		padUntil[player] = nil
 	end)
 end
 

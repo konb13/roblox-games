@@ -9,8 +9,9 @@ Config.Course = {
 	FallDistance = 35, -- fall this far below the course and you go back to your checkpoint
 }
 
+-- Speedrun pace: everyone runs fast.
 Config.Player = {
-	WalkSpeed = 16,
+	WalkSpeed = 24,
 	JumpHeight = 7.2,
 }
 
@@ -39,7 +40,7 @@ Config.Powers = {
 		id = "Zoomies",
 		name = "Zoomies",
 		icon = "⚡",
-		description = "Run super fast for 5 seconds.",
+		description = "Run even faster for 5 seconds.",
 		price = 25,
 		cooldown = 12,
 		duration = 5,
@@ -96,7 +97,9 @@ Config.Powers = {
 } :: { Power }
 
 Config.PowerTuning = {
-	ZoomiesSpeed = 34,
+	ZoomiesSpeed = 40,
+	SpeedPadSpeed = 38, -- ⚡ pads on every checkpoint
+	SpeedPadDuration = 2.5,
 	MoonBootsJumpHeight = 24,
 	ParachuteLift = 0.88, -- fraction of gravity cancelled while gliding
 }
@@ -106,7 +109,7 @@ Config.Chaos = {
 	Every = 60,
 	Duration = 20,
 	LowGravity = 70,
-	FrenzySpeed = 26,
+	FrenzySpeed = 32,
 	CoinRainCount = 30,
 }
 

@@ -49,7 +49,7 @@ end
 local function rescue(player: Player, stage: number)
 	local info = Brainrots.forStage(stage)
 	if info and DataService.grantBrainrot(player, info.id) then
-		announce(`🧠 You rescued {info.name}! ({info.rarity}, +{info.income} coins/s)`, "good", player)
+		announce(`🧠 You rescued {info.name}! "{info.chant}" ({info.rarity}, +{info.income} coins/s)`, "good", player)
 		if info.rarity == "Legendary" or info.rarity == "Mythic" then
 			announce(`🌟 {player.DisplayName} rescued the {info.rarity} {info.name}!`, "good")
 		end
@@ -69,6 +69,18 @@ end
 local function rebirth(player: Player)
 	if checkpointOf(player) < course.stageCount then
 		return
+	end
+	-- Stop the run timer.
+	local started = player:GetAttribute("RunStart")
+	player:SetAttribute("RunStart", nil)
+	if typeof(started) == "number" then
+		local seconds = workspace:GetServerTimeNow() - started
+		local timeText = DataService.formatTime(seconds)
+		if DataService.submitTime(player, seconds) then
+			announce(`⏱️ {player.DisplayName} set a NEW BEST TIME: {timeText}!`, "good")
+		else
+			announce(`⏱️ Your time: {timeText}`, "info", player)
+		end
 	end
 	DataService.addRebirth(player)
 	local reward = Config.Coins.FinishReward * DataService.multiplier(player)
@@ -178,6 +190,23 @@ function ProgressService.init(builtCourse: CourseBuilder.Course)
 			local player = Parts.playerFromHit(hit)
 			if player then
 				reachCheckpoint(player, stage)
+			end
+		end)
+	end
+
+	-- Crossing the start line (from the hub) starts a run.
+	course.startLine.Touched:Connect(function(hit)
+		local player = Parts.playerFromHit(hit)
+		if player and checkpointOf(player) == 0 then
+			player:SetAttribute("RunStart", workspace:GetServerTimeNow())
+		end
+	end)
+
+	for _, pad in course.speedPads do
+		pad.Touched:Connect(function(hit)
+			local player = Parts.playerFromHit(hit)
+			if player then
+				PowerService.speedBurst(player)
 			end
 		end)
 	end
