@@ -1,9 +1,10 @@
 --!strict
 -- Builds the sky course (runs along +Z over a bottomless void) and runs its traps.
 --
---   Hub -> 1 Glass Steps -> 2 Crumble Road -> 3 Spin Cycle -> 4 Blinky Bridge
---       -> 5 Glass Gamble -> 6 Boing Boing -> 7 Boulder Hill -> 8 Double Spin
+--   Hub -> 1 Glass Lanes -> 2 Crumble Road -> 3 Sweeper Alley -> 4 Blink Road
+--       -> 5 Glass Gamble -> 6 Launch Pads -> 7 Boulder Hill -> 8 Double Sweep
 --       -> 9 Blink Panic -> 10 Glass Gauntlet -> FINISH
+-- Speedrun style: everything is run through, nothing requires a jump.
 --
 -- Every stage ends in a checkpoint holding that stage's brainrot.
 
