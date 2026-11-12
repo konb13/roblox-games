@@ -116,7 +116,7 @@ function SquirrelAI.new(parent: Instance, spawnPosition: Vector3, isBlocked: (Ve
 		alertLabel = alertLabel,
 	}, SquirrelAI)
 
-	self.root.CFrame = CFrame.lookAt(self.position, self.position + self.facing)
+	model:PivotTo(CFrame.lookAt(self.position, self.position + self.facing))
 	model.Parent = parent
 	return self
 end

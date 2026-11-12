@@ -47,7 +47,7 @@ function CharacterDonut.apply(character: Model, kind: string)
 		then 3
 		else humanoid.HipHeight + hrp.Size.Y / 2
 	local offsetY = DonutModel.centerHeight(cfg.Scale) - rootHeight
-	root.CFrame = hrp.CFrame * CFrame.new(0, offsetY, 0)
+	donut:PivotTo(hrp.CFrame * CFrame.new(0, offsetY, 0)) -- moves every part, not just the root
 	local weld = Instance.new("WeldConstraint")
 	weld.Part0 = hrp
 	weld.Part1 = root

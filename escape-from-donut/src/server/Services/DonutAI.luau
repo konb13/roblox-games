@@ -78,7 +78,7 @@ function DonutAI.new(parent: Instance, spawnPosition: Vector3, floorY: number): 
 		sleepLabel = sleepLabel,
 	}, DonutAI)
 
-	self.root.CFrame = CFrame.lookAt(position, position + self.facing)
+	model:PivotTo(CFrame.lookAt(position, position + self.facing))
 	model.Parent = parent
 	return self
 end

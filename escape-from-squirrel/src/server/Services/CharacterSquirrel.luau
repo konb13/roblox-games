@@ -39,7 +39,7 @@ function CharacterSquirrel.apply(character: Model)
 	root.Anchored = false
 	root.Massless = true
 	local rootHeight = if humanoid.RigType == Enum.HumanoidRigType.R6 then 3 else humanoid.HipHeight + hrp.Size.Y / 2
-	root.CFrame = hrp.CFrame * CFrame.new(0, SquirrelModel.centerHeight(cfg.Scale) - rootHeight, 0)
+	squirrel:PivotTo(hrp.CFrame * CFrame.new(0, SquirrelModel.centerHeight(cfg.Scale) - rootHeight, 0))
 	local weld = Instance.new("WeldConstraint")
 	weld.Part0 = hrp
 	weld.Part1 = root

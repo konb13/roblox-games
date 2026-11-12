@@ -148,7 +148,7 @@ local function attachCarriedVisual(player: Player, kind: string)
 	local root = visual.PrimaryPart :: BasePart
 	root.Anchored = false
 	root.Massless = true
-	root.CFrame = hrp.CFrame * CFrame.new(0, 5, 0)
+	visual:PivotTo(hrp.CFrame * CFrame.new(0, 5, 0))
 	local weld = Instance.new("WeldConstraint")
 	weld.Part0 = hrp
 	weld.Part1 = root
@@ -196,7 +196,7 @@ spawnKey = function(kind: string, position: Vector3)
 
 	local model = buildKeyModel(kind, 1)
 	local root = model.PrimaryPart :: BasePart
-	root.CFrame = CFrame.new(position)
+	model:PivotTo(CFrame.new(position))
 	CollectionService:AddTag(root, "SpinKey") -- the client spins these
 
 	local light = Instance.new("PointLight")
