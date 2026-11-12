@@ -21,13 +21,19 @@ Find the keys, open the houses, grab the Master Key and reach the Exit before yo
 ## Getting it into Roblox Studio
 
 ### Option A: Rojo (recommended, keeps code in sync)
-1. Install [Roblox Studio](https://create.roblox.com).
-2. Install [VS Code](https://code.visualstudio.com) and its **Rojo** extension
-   (or install [Rokit](https://github.com/rojo-rbx/rokit) and run `rokit install` in this folder).
-3. In Studio, install the Rojo plugin (the VS Code extension offers to do this).
-4. Open this folder in VS Code → Rojo: **Start server** (or run `rojo serve`).
-5. In Studio: **File → New → Baseplate**, then click **Rojo → Connect** in the Plugins tab.
+1. Install [Roblox Studio](https://create.roblox.com), open it once and sign in.
+2. Open PowerShell in this `escape-from-donut` folder and download Rojo:
+   ```powershell
+   Invoke-WebRequest https://github.com/rojo-rbx/rojo/releases/download/v7.7.1/rojo-7.7.1-windows-x86_64.zip -OutFile rojo.zip
+   Expand-Archive rojo.zip -DestinationPath . -Force
+   .\rojo.exe plugin install
+   ```
+   (Or install the **Rojo** plugin by *rojo-rbx* from Studio's Toolbox → Plugins. Its version must
+   match `rojo.exe`. A mismatch shows an error mentioning `protocolVersion`.)
+3. Run `.\rojo.exe serve` and leave the window open.
+4. In Studio: **File → New → Baseplate**, then click **Rojo → Connect** in the Plugins tab.
    The scripts appear in ReplicatedStorage, ServerScriptService and StarterPlayerScripts.
+5. Press **Play**. The maze builds itself when the game starts, so edit mode only shows the Baseplate.
 
 ### Option B: copy and paste (no extra tools)
 Create these in Studio's Explorer and paste in each file's contents:
